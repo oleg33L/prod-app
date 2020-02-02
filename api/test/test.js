@@ -105,5 +105,115 @@ describe('Testting the book endpoits', ()=>{
             .eql('Please input a valid numeric value');
             done();
         })
-    })
+    });
+
+    it('It should update a book', (done)=>{
+        const bookId = 1;
+        const updateBook = {
+          id: bookId,
+          title: "Updated Awesome book",
+          price: "$10.99",
+          description: "We have updated the price"
+        };
+
+        chai
+          .request(app)
+          .put(`/api/v1/books/${bookId}`)
+          .set("Accept", "application/json")
+          .send(updateBook)
+          .end((err, res) => {
+              expect(res.status).to.equal(200);
+              expect(res.body.data.id).equal(updateBook.id);
+              expect(res.body.data.title).equal(updateBook.title);
+              expect(res.body.data.price).equal(updateBook.price);
+              expect(res.body.data.description).equal(updateBook.description);
+              done();              
+          });
+    });
+
+    it('It should not update book with invalid id', (done)=>{
+        const bookId = 9999;
+        const updateBook = {
+            id: bookId,
+            title: 'Updated Awesome book again',
+            price: '$11.99',
+            description: 'We have updated the price'
+        };
+
+        chai.request(app)
+        .put(`/api/v1/books/${bookId}`)
+        .set('Accept', 'application/json')
+        .send(updateBook)
+        .end((err, res) => {
+            expect(res.status).to.equal(400)
+            res.body.should.have
+              .property("message")
+              .eql(`Cannot find book with the id ${bookId}`);
+              done();
+        })
+    });
+
+    it('It should not update a book with non-numeric id value', (done)=>{
+        const bookId = 'fgggg';
+        const updateBook = {
+          id: bookId,
+          title: "Updated Awesome book again",
+          price: "$11.99",
+          description: "We have updated the price"
+        };
+
+        chai.request(app)
+        .put(`/api/v1/books/${bookId}`)
+        .set('Accept', 'application/json')
+        .send(updateBook)
+        .end((err, res) => {
+            expect(res.status).to.equal(400);
+            res.body.should.have.property("message")
+            .eql('Please input a valid numeric value');
+            done();
+        })
+    });
+
+    it('It should delete a book', (done)=>{
+        const bookId = 1;
+
+        chai.request(app)
+        .delete(`/api/v1/books/${bookId}`)
+        .set('Accept', 'application/json')
+        .end((err, res) => {
+            expect(res.status).to.equal(200);
+            expect(res.body.data).to.include({});
+            done();
+        })
+    });
+
+    it('It s not delete a book with invalid id', (done)=>{
+        const bookId = 667;
+
+        chai.request(app)
+        .delete(`/api/v1/books/${bookId}`)
+        .set('Accept', 'application/json')
+        .end((err, res) => {
+            expect(res.status).to.equal(404);
+            res.body.should.have
+              .property("message")
+              .eql(`Cannot find book with the id ${bookId}`);
+            done();
+        })
+    });
+
+    it('It should not delete a book with non-numeric id', (done)=>{
+        const bookId = 'aaa';
+
+        chai.request(app)
+        .delete(`/api/v1/books/${bookId}`)
+        .set('Accept', 'application/json')
+        .end((err, res) => {
+            expect(res.status).to.equal(400);
+            res.body.should.have
+              .property("message")
+              .eql("Please input a valid numeric value");
+            done();
+        });
+    });
 })
